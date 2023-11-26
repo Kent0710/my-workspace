@@ -11,5 +11,5 @@ export default async function middleware(req: NextRequest) {
 }
 
 export const config = {
-    matcher : [ '/', 'https://my-workspace-six.vercel.app/teams', 'https://my-workspace-six.vercel.app/chats', 'https://my-workspace-six.vercel.app/discoverTeams', 'https://my-workspace-six.vercel.app/materials', 'https://my-workspace-six.vercel.app/projects', 'https://my-workspace-six.vercel.app/tasks', ],
+    matcher : [ '/', '/teams', '/chats', '/discoverTeams', '/materials', '/projects', '/tasks', ],
 }
