@@ -1,6 +1,7 @@
 import { twMerge } from "tw-merge";
 
 import ViewBox from "./ViewBox";
+import UnderDevelopment from "./UnderDevelopment";
 
 const Projects = () => {
     return (
@@ -9,26 +10,9 @@ const Projects = () => {
             className="flex flex-col h-fit"
         >
 
-            <ProjectStatusBox
-                statusText="Not started"
+            <UnderDevelopment
+                headerText="Monitor your projects efficiently."
             />
-
-            <ProjectStatusBox
-                statusText="Planning"
-            />
-
-            <ProjectStatusBox
-                statusText="In progress"
-            />
-
-            <ProjectStatusBox
-                statusText="Completed"
-            />
-
-            <ProjectStatusBox
-                statusText="Cancelled"
-            />
-            
 
         </ViewBox>
     )

@@ -1,4 +1,4 @@
-import NextAuth from "next-auth/next";
+import NextAuth from "next-auth";
 import Auth0Provider from 'next-auth/providers/auth0'
 
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
@@ -20,12 +20,6 @@ export const authOptions = {
     ],
     pages : {
         signIn : "/signIn"
-    },
-    callbacks : {
-        authorized({req, token}) {
-            if (token) return true
-        },
-        
     },
     secret : process.env.AUTH0_SECRET || '',
 };

@@ -71,7 +71,7 @@ const SingleTeam = () => {
             <div
             className="flex w-full h-full"
             >
-                <SingleTeamSidebar teamName={teamData.name}/>
+                <SingleTeamSidebar teamName="hi"/>
                 <Announcements />
             </div>
         )
@@ -82,7 +82,7 @@ const SingleTeam = () => {
             <div
             className="flex w-full h-full"
             >
-                <SingleTeamSidebar teamName={teamData.name}/>
+                <SingleTeamSidebar teamName="hi"/>
                 <Classes />
             </div>
         )
@@ -93,7 +93,7 @@ const SingleTeam = () => {
             <div
             className="flex w-full h-full"
             >
-                <SingleTeamSidebar teamName={teamData.name}/>
+                <SingleTeamSidebar teamName="hi"/>
                 <Projects />
             </div>
         )
@@ -104,7 +104,7 @@ const SingleTeam = () => {
             <div
             className="flex w-full h-full"
             >
-                <SingleTeamSidebar teamName={teamData.name}/>
+                <SingleTeamSidebar teamName="hi"/>
                 <Tasks />
             </div>
         )
@@ -116,7 +116,7 @@ const SingleTeam = () => {
             <div
             className="flex w-full h-full"
             >
-                <SingleTeamSidebar teamName={teamData.name}/>
+                <SingleTeamSidebar teamName="hi"/>
                 <Settings 
                     teamData={teamData}
                     isTeamOwned={isTeamOwned}
@@ -136,6 +136,7 @@ const Announcements = () => {
     const [editedPostId, setEditedPostId] = useState("");
     const [isComposing, setIsComposing] = useState(false);
     const [postDeleted, setPostDeleted] = useState(false);
+    const [currentUserName, setCurrentUserName] = useState("");
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -147,13 +148,37 @@ const Announcements = () => {
                     console.log(fetchedPosts);
                     setPosts(fetchedPosts);
                 }
+
+                const currentUser = await getCurrentUser();
+
+                if (currentUser) {
+                    setCurrentUserName(currentUser.name!)
+                }
+
             } catch (error) {
                 console.error("Error fetching data posts:", error);
             }
         };
     
         fetchData();
-    }, [isComposing, postDeleted])
+
+        // pusher realtime control
+        // the current user name contains the sender name
+        const channel = pusherClient.subscribe(`new-post-${currentUserName}`);
+
+
+        channel.bind(`new-post`, (data : any) => {
+            setPosts((prevPosts) => [...prevPosts, data.newPost]);
+
+            console.log(data.newPost)
+        })
+
+        return () => {
+            pusherClient.unsubscribe(`new-post-${currentUserName}`);
+            pusherClient.unbind('new-post')
+        }
+
+    }, [isComposing, postDeleted, currentUserName])
 
     const handleComposeClick = () => {
         setIsComposing(true)
@@ -171,20 +196,35 @@ const Announcements = () => {
                     <div
                         className="flex flex-col gap-5 items-center  h-[80%] overflow-y-auto"
                     >
-                        {posts.map((post : PostType) => (
-                            <MessageBox
-                                setEditedPostId={setEditedPostId}
-                                id={post.id}
-                                authorName={post.author.name}
-                                dateTime={post.datePosted.toLocaleString()}
-                                postContent={post.postContent}
-                                postTag={post.tag}
-                                setIsEditing={setIsEditing}
-                                key={post.id}
-                                setPostDeleted={setPostDeleted}
-                                onClick={handleComposeClick}
-                            />
-                        ))}
+                        {posts.length === 0 ? (
+                            <div
+                                className="flex flex-col gap-3 items-center h-full justify-center  w-full"
+                            >
+                                <h1
+                                    className="font-semibold text-blue-700 tracking-wide"
+                                >
+                                    No posts yet.
+                                </h1>
+                                <small>
+                                    Click compose to start posting!
+                                </small>
+                            </div>
+                        ) : (
+                            posts.map((post: PostType) => (
+                                <MessageBox
+                                    setEditedPostId={setEditedPostId}
+                                    id={post.id}
+                                    authorName={post.author.name}
+                                    dateTime={post.datePosted.toLocaleString()}
+                                    postContent={post.postContent}
+                                    postTag={post.tag}
+                                    setIsEditing={setIsEditing}
+                                    key={post.id}
+                                    setPostDeleted={setPostDeleted}
+                                    onClick={handleComposeClick}
+                                />
+                            ))
+                        )}
                     </div>
         
                     <div
@@ -379,6 +419,8 @@ import { getTeam } from "@/actions/getTeam";
 import Loading from "./Loading";
 import { getCurrentUser } from "@/actions/getSessionUser";
 import { useTeamName } from "@/hooks/useTeamName";
+import { pusherClient } from "@/lib/pusher";
+import { toPusherKey } from "@/utils/toPusherKey";
 
 interface SettingsProps {
     teamData : any;
